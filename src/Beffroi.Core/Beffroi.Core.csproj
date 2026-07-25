@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Cœur hexagonal : domaine + application.
+    Règle : AUCUN PackageReference ici. Si une dépendance externe devient nécessaire,
+    c'est le signe qu'il faut définir un port et placer l'adapter dans Beffroi.Infrastructure.
+    Les propriétés communes (TFM, nullable, ...) viennent de Directory.Build.props.
+  -->
+
+</Project>

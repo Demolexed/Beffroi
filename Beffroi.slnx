@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Beffroi.Api/Beffroi.Api.csproj" />
+    <Project Path="src/Beffroi.Core/Beffroi.Core.csproj" />
+    <Project Path="src/Beffroi.Infrastructure/Beffroi.Infrastructure.csproj" />
+  </Folder>
+</Solution>

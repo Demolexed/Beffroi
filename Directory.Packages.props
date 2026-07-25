@@ -1,0 +1,22 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Génération du document OpenAPI (Microsoft, remplace le générateur Swashbuckle depuis .NET 9/10). -->
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <!--
+      Remontée explicite : Microsoft.AspNetCore.OpenApi 10.0.10 tire Microsoft.OpenApi 2.0.0,
+      touché par GHSA-v5pm-xwqc-g5wc (sévérité élevée). À retirer quand le SDK embarquera une
+      version saine par défaut.
+    -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.11.0" />
+    <!-- Uniquement l'UI Swagger : pas le générateur Swashbuckle. -->
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+    <!-- Abstractions DI, nécessaires au dispatcher côté Infrastructure. -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+  </ItemGroup>
+
+</Project>

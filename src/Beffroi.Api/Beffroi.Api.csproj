@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Adapter primaire HTTP. Les propriétés communes viennent de Directory.Build.props. -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Beffroi.Core\Beffroi.Core.csproj" />
+    <ProjectReference Include="..\Beffroi.Infrastructure\Beffroi.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
