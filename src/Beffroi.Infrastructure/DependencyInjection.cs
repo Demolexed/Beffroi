@@ -2,6 +2,7 @@ using System.Reflection;
 using Beffroi.Core.Application.Abstractions.Messaging;
 using Beffroi.Core.Application.Ports;
 using Beffroi.Infrastructure.Adapters;
+using Beffroi.Infrastructure.Adapters.InMemory;
 using Beffroi.Infrastructure.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,14 @@ public static class DependencyInjection
     {
         services.AddSingleton<IDispatcher, Dispatcher>();
         services.AddSingleton<IClock, SystemClock>();
+
+        // Persistance de dépannage : jeu de démonstration en mémoire, perdu à chaque redémarrage.
+        services.AddSingleton<EntrepotInMemory>();
+        services.AddSingleton<ICommuneRepository, CommuneRepositoryInMemory>();
+        services.AddSingleton<IConseilMunicipalRepository, ConseilMunicipalRepositoryInMemory>();
+        services.AddSingleton<ISeanceRepository, SeanceRepositoryInMemory>();
+        services.AddSingleton<IBudgetRepository, BudgetRepositoryInMemory>();
+        services.AddSingleton<IProgrammeRepository, ProgrammeRepositoryInMemory>();
 
         services.AddApplicationHandlers(typeof(IDispatcher).Assembly);
 

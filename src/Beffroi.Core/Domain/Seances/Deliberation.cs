@@ -36,8 +36,8 @@ public sealed class Deliberation
     /// </summary>
     public string ObjetOfficiel { get; }
 
-    /// <summary>Reformulation éditoriale, absente tant qu'elle n'a pas été produite.</summary>
-    public IntituleEnClair? IntituleEnClair { get; private set; }
+    /// <summary>Mise en langage clair, absente tant qu'elle n'a pas été produite.</summary>
+    public Reformulation? Reformulation { get; private set; }
 
     public Thematique? Thematique { get; private set; }
 
@@ -101,7 +101,7 @@ public sealed class Deliberation
 
     public void Classer(Thematique thematique) => Thematique = thematique;
 
-    public void Reformuler(IntituleEnClair intitule) => IntituleEnClair = intitule;
+    public void Reformuler(Reformulation reformulation) => Reformulation = reformulation;
 
     public void AttribuerAuRapporteur(SiegeId siege) => Rapporteur = siege;
 

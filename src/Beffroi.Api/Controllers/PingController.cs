@@ -12,7 +12,7 @@ namespace Beffroi.Api.Controllers;
 /// et rend le résultat. C'est le rôle d'un adapter primaire.
 /// </remarks>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public sealed class PingController(IDispatcher dispatcher) : ControllerBase
 {
     /// <summary>
