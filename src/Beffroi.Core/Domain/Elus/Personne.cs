@@ -16,14 +16,21 @@ namespace Beffroi.Core.Domain.Elus;
 /// </summary>
 public sealed class Personne
 {
-    private Personne(IdentifiantRne identifiant, string nom, string prenom)
+    private Personne(PersonneId id, IdentifiantRne identifiant, string nom, string prenom)
     {
+        Id = id;
         Identifiant = identifiant;
         Nom = nom;
         Prenom = prenom;
     }
 
-    /// <summary>Identité de l'entité : résout les homonymies à l'échelle nationale.</summary>
+    /// <summary>Identité technique : c'est elle que référencent présences, votes et sièges.</summary>
+    public PersonneId Id { get; }
+
+    /// <summary>
+    /// Identifiant métier issu du répertoire national. Sert à dédupliquer entre deux imports,
+    /// pas à lier les objets entre eux — ce rôle revient à <see cref="Id"/>.
+    /// </summary>
     public IdentifiantRne Identifiant { get; }
 
     public string Nom { get; }
@@ -31,11 +38,23 @@ public sealed class Personne
     public string Prenom { get; }
 
     public static Personne Create(IdentifiantRne identifiant, string nom, string prenom)
+        => Create(PersonneId.New(), identifiant, nom, prenom);
+
+    /// <summary>Reconstitue une personne dont l'identité est déjà connue.</summary>
+    public static Personne Create(PersonneId id, IdentifiantRne identifiant, string nom, string prenom)
     {
         DomainException.ThrowIf(string.IsNullOrWhiteSpace(nom), "Le nom est obligatoire.");
         DomainException.ThrowIf(string.IsNullOrWhiteSpace(prenom), "Le prénom est obligatoire.");
-        return new Personne(identifiant, nom.Trim(), prenom.Trim());
+        return new Personne(id, identifiant, nom.Trim(), prenom.Trim());
     }
 
     public override string ToString() => $"{Prenom} {Nom}";
+}
+
+/// <summary>Identité technique d'une <see cref="Personne"/>.</summary>
+public readonly record struct PersonneId(Guid Valeur)
+{
+    public static PersonneId New() => new(Guid.CreateVersion7());
+
+    public override string ToString() => Valeur.ToString();
 }

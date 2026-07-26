@@ -11,12 +11,19 @@ namespace Beffroi.Core.Domain.Communes;
 /// </summary>
 public sealed class Commune
 {
-    private Commune(CodeInsee code, string nom, PopulationMunicipale population)
+    private Commune(CommuneId id, CodeInsee code, string nom, PopulationMunicipale population)
     {
+        Id = id;
         Code = code;
         Nom = nom;
         Population = population;
     }
+
+    /// <summary>
+    /// Identité technique, stable et opaque. Le <see cref="CodeInsee"/> reste l'identifiant
+    /// métier officiel : les deux coexistent et ne servent pas à la même chose.
+    /// </summary>
+    public CommuneId Id { get; }
 
     public CodeInsee Code { get; }
 
@@ -29,12 +36,24 @@ public sealed class Commune
     public PopulationMunicipale Population { get; }
 
     public static Commune Create(CodeInsee code, string nom, PopulationMunicipale population)
+        => Create(CommuneId.New(), code, nom, population);
+
+    /// <summary>Reconstitue une commune dont l'identité est déjà connue (relecture depuis une source).</summary>
+    public static Commune Create(CommuneId id, CodeInsee code, string nom, PopulationMunicipale population)
     {
         DomainException.ThrowIf(string.IsNullOrWhiteSpace(nom), "Le nom de la commune est obligatoire.");
-        return new Commune(code, nom.Trim(), population);
+        return new Commune(id, code, nom.Trim(), population);
     }
 
     public override string ToString() => $"{Nom} ({Code})";
+}
+
+/// <summary>Identité technique d'une <see cref="Commune"/>.</summary>
+public readonly record struct CommuneId(Guid Valeur)
+{
+    public static CommuneId New() => new(Guid.CreateVersion7());
+
+    public override string ToString() => Valeur.ToString();
 }
 
 /// <summary>

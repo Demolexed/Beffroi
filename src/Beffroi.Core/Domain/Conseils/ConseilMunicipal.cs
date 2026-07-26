@@ -1,4 +1,5 @@
 using Beffroi.Core.Domain.Common;
+using Beffroi.Core.Domain.Conseils.Enums;
 using Beffroi.Core.Domain.Elus;
 
 namespace Beffroi.Core.Domain.Conseils;
@@ -14,11 +15,15 @@ public sealed class ConseilMunicipal
     private readonly List<ListeElectorale> _listes = [];
     private readonly List<Siege> _sieges = [];
 
-    private ConseilMunicipal(Mandature mandature, Source source)
+    private ConseilMunicipal(ConseilMunicipalId id, Mandature mandature, Source source)
     {
+        Id = id;
         Mandature = mandature;
         Source = source;
     }
+
+    /// <summary>Identité technique : c'est elle que référencent les séances.</summary>
+    public ConseilMunicipalId Id { get; }
 
     public Mandature Mandature { get; }
 
@@ -30,7 +35,11 @@ public sealed class ConseilMunicipal
     public IReadOnlyList<Siege> Sieges => _sieges;
 
     public static ConseilMunicipal Constituer(Mandature mandature, Source source)
-        => new(mandature, source);
+        => new(ConseilMunicipalId.New(), mandature, source);
+
+    /// <summary>Reconstitue un conseil dont l'identité est déjà connue.</summary>
+    public static ConseilMunicipal Constituer(ConseilMunicipalId id, Mandature mandature, Source source)
+        => new(id, mandature, source);
 
     /// <summary>
     /// Déclare une liste ayant obtenu des sièges. À appeler avant d'attribuer les sièges
@@ -38,7 +47,7 @@ public sealed class ConseilMunicipal
     /// </summary>
     public ListeElectorale DeclarerListe(string nom, int nombreDeSieges)
     {
-        var liste = new ListeElectorale(nom, nombreDeSieges);
+        var liste = new ListeElectorale(ListeElectoraleId.New(), nom, nombreDeSieges);
 
         DomainException.ThrowIf(
             _listes.Any(existante => existante.Nom.Equals(liste.Nom, StringComparison.OrdinalIgnoreCase)),
@@ -58,27 +67,25 @@ public sealed class ConseilMunicipal
             $"La période du siège ({periode}) déborde la mandature ({Mandature.Periode}).");
 
         DomainException.ThrowIf(
-            liste is not null && !_listes.Contains(liste),
+            liste is not null && _listes.All(declaree => declaree.Id != liste.Id),
             "La liste rattachée au siège n'a pas été déclarée sur cette mandature.");
 
         VerifierEffectifLegal(periode);
         VerifierUniciteDuMaire(fonction, periode);
         VerifierAdjoints(fonction, periode);
 
-        var siege = new Siege(titulaire, fonction, liste, periode);
+        var siege = new Siege(SiegeId.New(), titulaire, fonction, liste, periode);
         _sieges.Add(siege);
         return siege;
     }
 
-    /// <summary>Met fin à l'occupation d'un siège (démission, décès, fin de mandature).</summary>
-    public void CloreSiege(Siege siege, DateOnly fin, MotifDeFin motif)
-    {
-        DomainException.ThrowIf(
-            !_sieges.Contains(siege),
-            "Ce siège n'appartient pas à ce conseil municipal.");
+    /// <summary>Confie une délégation au titulaire d'un siège (art. L2122-18 CGCT).</summary>
+    public void ConfierDelegation(SiegeId siegeId, Delegation delegation)
+        => TrouverSiege(siegeId).ConfierDelegation(delegation);
 
-        siege.Clore(fin, motif);
-    }
+    /// <summary>Met fin à l'occupation d'un siège (démission, décès, fin de mandature).</summary>
+    public void CloreSiege(SiegeId siegeId, DateOnly fin, MotifDeFin motif)
+        => TrouverSiege(siegeId).Clore(fin, motif);
 
     // --- Lectures datées -----------------------------------------------------------------------
 
@@ -105,18 +112,27 @@ public sealed class ConseilMunicipal
     /// <c>null</c> quand la question n'a pas de réponse factuelle : pas de maire connu,
     /// ou aucun rattachement de liste. Ne jamais convertir ce <c>null</c> en « opposition ».
     /// </summary>
-    public bool? AppartientALaMajoriteAu(Siege siege, DateOnly date)
+    public bool? AppartientALaMajoriteAu(SiegeId siegeId, DateOnly date)
     {
+        var siege = TrouverSiege(siegeId);
         var majoritaire = ListeMajoritaireAu(date);
+
         if (majoritaire is null || siege.Liste is null)
         {
             return null;
         }
 
-        return ReferenceEquals(siege.Liste, majoritaire);
+        return siege.Liste.Id == majoritaire.Id;
     }
 
     // --- Invariants ----------------------------------------------------------------------------
+
+    private Siege TrouverSiege(SiegeId siegeId)
+    {
+        var siege = _sieges.SingleOrDefault(candidat => candidat.Id == siegeId);
+        DomainException.ThrowIf(siege is null, "Ce siège n'appartient pas à ce conseil municipal.");
+        return siege!;
+    }
 
     private void VerifierEffectifLegal(Period periode)
     {
@@ -163,4 +179,12 @@ public sealed class ConseilMunicipal
 
     public override string ToString()
         => $"Conseil municipal de {Mandature.Commune} — {Mandature.Periode} — {_sieges.Count} sièges";
+}
+
+/// <summary>Identité technique d'un <see cref="ConseilMunicipal"/>.</summary>
+public readonly record struct ConseilMunicipalId(Guid Valeur)
+{
+    public static ConseilMunicipalId New() => new(Guid.CreateVersion7());
+
+    public override string ToString() => Valeur.ToString();
 }

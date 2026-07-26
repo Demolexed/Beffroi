@@ -18,14 +18,17 @@ namespace Beffroi.Core.Domain.Conseils;
 /// </summary>
 public sealed class ListeElectorale
 {
-    internal ListeElectorale(string nom, int nombreDeSieges)
+    internal ListeElectorale(ListeElectoraleId id, string nom, int nombreDeSieges)
     {
         DomainException.ThrowIf(string.IsNullOrWhiteSpace(nom), "Le nom de la liste est obligatoire.");
         DomainException.ThrowIf(nombreDeSieges < 0, "Un nombre de sièges ne peut pas être négatif.");
 
+        Id = id;
         Nom = nom.Trim();
         NombreDeSieges = nombreDeSieges;
     }
+
+    public ListeElectoraleId Id { get; }
 
     public string Nom { get; }
 
@@ -33,4 +36,12 @@ public sealed class ListeElectorale
     public int NombreDeSieges { get; }
 
     public override string ToString() => Nom;
+}
+
+/// <summary>Identité technique d'une <see cref="ListeElectorale"/>.</summary>
+public readonly record struct ListeElectoraleId(Guid Valeur)
+{
+    public static ListeElectoraleId New() => new(Guid.CreateVersion7());
+
+    public override string ToString() => Valeur.ToString();
 }
