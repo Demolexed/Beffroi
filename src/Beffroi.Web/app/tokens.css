@@ -1,0 +1,80 @@
+/*
+  Socle visuel de Beffroi.
+
+  Règle : aucun composant ne connaît une couleur thématique. Il pose data-thematique="{code}"
+  — le code venant de l'API, jamais d'une table côté front — et lit var(--th) / var(--th-clair).
+  Changer une couleur se fait ici, une fois, et se propage aux cartes, aux badges, aux bandeaux
+  et aux barres de budget.
+*/
+
+:root {
+  --fond: #f3f2f2;
+  --fond-carte: #eae9e9;
+  --fond-sombre: #201e1d;
+
+  --encre: #201e1d;
+  --encre-doux: rgba(32, 30, 29, 0.72);
+  --encre-faible: rgba(32, 30, 29, 0.55);
+  --trait: rgba(32, 30, 29, 0.4);
+
+  /* Le rouge est réservé aux actions et aux points de désaccord. Jamais décoratif. */
+  --action: #ec3013;
+  --lien: #ae1800;
+  --alerte-fond: #ffe0d9;
+
+  --sur-couleur: #f3f2f2;
+}
+
+/*
+  Les sept thématiques, dans l'ordre de l'enum Thematique côté .NET — c'est cet ordre qui donne
+  la numérotation 01 à 07 de l'interface.
+
+  Les variantes claires servent uniquement sur fond sombre, où la couleur pleine ne passe pas le
+  contraste. Trois d'entre elles (éducation, environnement, sécurité) viennent de la maquette de
+  référence ; les quatre autres en sont dérivées par le même éclaircissement et méritent une
+  relecture d'ensemble.
+*/
+
+[data-thematique="education"] {
+  --th: #2b5aa5;
+  --th-clair: #5b8fd6;
+}
+
+[data-thematique="transports-et-voirie"] {
+  --th: #00718d;
+  --th-clair: #4c9fb5;
+}
+
+[data-thematique="environnement"] {
+  --th: #1f7350;
+  --th-clair: #4a9e73;
+}
+
+[data-thematique="finances"] {
+  --th: #8a6a00;
+  --th-clair: #bfa03c;
+}
+
+[data-thematique="urbanisme"] {
+  --th: #7b4795;
+  --th-clair: #a97dc0;
+}
+
+[data-thematique="securite"] {
+  --th: #a83a5e;
+  --th-clair: #d2718f;
+}
+
+[data-thematique="culture-et-sport"] {
+  --th: #a75f13;
+  --th-clair: #d08f4a;
+}
+
+/*
+  Thematique nulle. Le contrat autorise une délibération ou une ligne budgétaire sans thématique,
+  et ce cas doit rester visiblement distinct d'une thématique réelle — pas emprunter une couleur.
+*/
+[data-thematique="neutre"] {
+  --th: #7d7979;
+  --th-clair: #a8a4a4;
+}

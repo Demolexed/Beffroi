@@ -6,8 +6,13 @@ namespace Beffroi.Core.Application.Contracts;
 /// <summary>
 /// Document d'origine d'un fait. Présent sur toute donnée affirmée par Beffroi :
 /// c'est la traduction, dans le contrat, de l'invariant de vérifiabilité.
+///
+/// <c>Libelle</c> décrit le document en français, prêt à afficher (« Procès-verbal de la séance
+/// du 14 mars 2026 (42 p.) »). Il est composé côté serveur parce que lui seul connaît le contexte
+/// du document au moment de la projection : une URL et deux dates ne permettent pas à un client
+/// de deviner ce qu'il désigne.
 /// </summary>
-public sealed record SourceDto(string Url, DateOnly DatePublication, DateOnly? DateTeletransmission);
+public sealed record SourceDto(string Libelle, string Url, DateOnly DatePublication, DateOnly? DateTeletransmission);
 
 public sealed record PopulationDto(int NombreHabitants, int Millesime);
 

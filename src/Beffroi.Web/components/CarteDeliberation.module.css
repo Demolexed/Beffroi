@@ -1,0 +1,98 @@
+.carte {
+  background: var(--fond);
+  display: grid;
+  grid-template-columns: 8px 1fr;
+}
+
+/* Le bandeau porte la seule couleur de la carte. */
+.bandeau {
+  background: var(--th);
+}
+
+.corps {
+  padding: 24px 0 24px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
+  gap: 32px;
+}
+
+.principal {
+  grid-column: span 2;
+  min-width: 0;
+}
+
+.chapeau {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.date {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--encre-faible);
+}
+
+.titre {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+
+/* Repli sans reformulation : c'est le verbatim de l'acte, pas une phrase écrite pour être lue. */
+.titreOfficiel {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.resume {
+  margin: 0 0 12px;
+  max-width: 70ch;
+  color: var(--encre-doux);
+  text-wrap: pretty;
+}
+
+.sansResume {
+  margin: 0 0 12px;
+  max-width: 70ch;
+  font-size: 13.5px;
+  color: var(--encre-faible);
+  font-style: italic;
+}
+
+.pied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: baseline;
+  font-size: 12.5px;
+  color: var(--encre-faible);
+}
+
+.montant {
+  font-weight: 800;
+  color: var(--encre);
+}
+
+.source {
+  color: var(--lien);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.relecture {
+  margin-bottom: 12px;
+}
+
+.relu {
+  font-size: 12px;
+  color: var(--encre-faible);
+}

@@ -1,0 +1,36 @@
+.etiquette {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+/*
+  La couleur vient du conteneur porteur de data-thematique, jamais d'une prop. Le repli sur le
+  gris neutre couvre le cas où l'étiquette serait posée hors d'un tel conteneur.
+*/
+.thematique {
+  background: var(--th, #7d7979);
+  color: var(--sur-couleur);
+}
+
+/* Sur fond sombre : la couleur pleine ne passe pas le contraste, la variante claire si. */
+.thematiqueSurSombre {
+  background: transparent;
+  color: var(--th-clair, #a8a4a4);
+  padding-left: 0;
+}
+
+.alerte {
+  background: var(--alerte-fond);
+  color: var(--lien);
+}
+
+.neutre {
+  border: 1px solid var(--trait);
+  color: var(--encre-faible);
+  font-weight: 600;
+}

@@ -1,0 +1,61 @@
+.bloc {
+  border-left: 2px solid var(--trait);
+  padding-left: 24px;
+}
+
+.intitule {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--encre-faible);
+  margin-bottom: 12px;
+}
+
+.decompte {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.nombre {
+  font-size: 22px;
+  font-weight: 800;
+  min-width: 40px;
+}
+
+/* Le rouge signale le désaccord, pas l'erreur. */
+.contre {
+  color: var(--lien);
+}
+
+.abstentions {
+  color: var(--encre-faible);
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--encre-doux);
+  line-height: 1.5;
+  border-top: 2px solid var(--trait);
+  padding-top: 12px;
+}
+
+.sansDecompte {
+  font-size: 13.5px;
+  color: var(--encre-doux);
+  line-height: 1.5;
+}
+
+.resultat {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}

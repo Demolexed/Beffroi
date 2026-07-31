@@ -1,4 +1,5 @@
 using Beffroi.Core.Domain.Budgets;
+using Beffroi.Core.Domain.Budgets.Enums;
 using Beffroi.Core.Domain.Common;
 using Beffroi.Core.Domain.Communes;
 using Beffroi.Core.Domain.Conseils;
@@ -20,8 +21,13 @@ public static class Projections
     public const string AppartenanceHorsMajorite = "horsMajorite";
     public const string AppartenanceIndeterminee = "indetermine";
 
-    public static SourceDto VersDto(this Source source)
-        => new(source.Url.ToString(), source.DatePublication, source.DateTeletransmission);
+    /// <summary>
+    /// Le libellé est fourni par l'appelant : <see cref="Source"/> ne porte que l'URL et deux
+    /// dates, jamais la nature du document. Seul le site de projection sait s'il décrit un
+    /// procès-verbal, un budget ou un programme électoral.
+    /// </summary>
+    public static SourceDto VersDto(this Source source, string libelle)
+        => new(libelle, source.Url.ToString(), source.DatePublication, source.DateTeletransmission);
 
     public static CommuneDto VersDto(this Commune commune)
         => new(
@@ -40,7 +46,7 @@ public static class Projections
             conseil.Mandature.Periode.End,
             conseil.Mandature.EffectifLegal,
             conseil.Mandature.NombreMaximalDAdjoints,
-            conseil.Source.VersDto());
+            conseil.Source.VersDto(LibelleConseil(conseil)));
 
     public static ConseilDto VersDto(this ConseilMunicipal conseil, DateOnly au)
         => new(
@@ -50,7 +56,7 @@ public static class Projections
             conseil.VersDto(),
             conseil.CompositionAu(au).Count,
             [.. conseil.Listes.Select(liste => liste.VersDto(conseil, au))],
-            conseil.Source.VersDto());
+            conseil.Source.VersDto(LibelleConseil(conseil)));
 
     public static ListeElectoraleDto VersDto(this ListeElectorale liste, ConseilMunicipal conseil, DateOnly au)
         => new(
@@ -89,7 +95,11 @@ public static class Projections
             delegation.Periode.Start,
             delegation.Periode.End);
 
-    public static ProcesVerbalDto VersDto(this ProcesVerbal pv, DateOnly aujourdhui)
+    /// <summary>
+    /// <paramref name="dateSeance"/> ne sert qu'au libellé de la source : un procès-verbal se
+    /// désigne par la séance qu'il relate, pas par sa propre date d'approbation.
+    /// </summary>
+    public static ProcesVerbalDto VersDto(this ProcesVerbal pv, DateOnly aujourdhui, DateOnly dateSeance)
         => new(
             pv.EstApprouve,
             pv.EstPublie,
@@ -98,7 +108,7 @@ public static class Projections
             pv.EstEnRetardAu(aujourdhui),
             pv.JoursDeRetardAu(aujourdhui),
             pv.NombreDePages,
-            pv.Source?.VersDto());
+            pv.Source?.VersDto(LibelleProcesVerbal(dateSeance, pv.NombreDePages)));
 
     public static PresenceDto VersDto(this PresenceEnSeance presence)
         => new(presence.Elu.Valeur, presence.Statut.ToString(), presence.PouvoirDonneA?.Valeur);
@@ -137,7 +147,7 @@ public static class Projections
             deliberation.Resultat.ToString(),
             deliberation.EstUnanime,
             deliberation.Vote?.VersDto(),
-            deliberation.Source.VersDto());
+            deliberation.Source.VersDto(LibelleDeliberation(deliberation.Numero, dateSeance)));
 
     public static SeanceDto VersDto(this Seance seance, DateOnly aujourdhui)
         => new(
@@ -146,8 +156,8 @@ public static class Projections
             seance.Date,
             seance.Deliberations.Count,
             seance.NombreDePresents,
-            seance.ProcesVerbal.VersDto(aujourdhui),
-            seance.Source.VersDto());
+            seance.ProcesVerbal.VersDto(aujourdhui, seance.Date),
+            seance.Source.VersDto(LibelleSeance(seance.Date)));
 
     public static SeanceDetailDto VersDetailDto(this Seance seance, DateOnly aujourdhui)
         => new(
@@ -155,13 +165,18 @@ public static class Projections
             seance.Conseil.Valeur,
             seance.Date,
             seance.NombreDePresents,
-            seance.ProcesVerbal.VersDto(aujourdhui),
+            seance.ProcesVerbal.VersDto(aujourdhui, seance.Date),
             [.. seance.Deliberations.Select(deliberation => deliberation.VersDto(seance.Date))],
             [.. seance.Presences.Select(VersDto)],
-            seance.Source.VersDto());
+            seance.Source.VersDto(LibelleSeance(seance.Date)));
 
     public static BudgetSommaireDto VersSommaireDto(this Budget budget)
-        => new(budget.Id.Valeur, budget.Exercice, budget.Nature.ToString(), budget.Total.Euros, budget.Source.VersDto());
+        => new(
+            budget.Id.Valeur,
+            budget.Exercice,
+            budget.Nature.ToString(),
+            budget.Total.Euros,
+            budget.Source.VersDto(LibelleBudget(budget.Nature, budget.Exercice)));
 
     public static BudgetDto VersDto(this Budget budget, PopulationMunicipale? population)
     {
@@ -180,7 +195,7 @@ public static class Projections
                 ligne.Montant.Euros,
                 total == 0 ? 0 : ligne.Montant.Euros / total,
                 ligne.Thematique is { } thematique ? Code(thematique) : null))],
-            budget.Source.VersDto());
+            budget.Source.VersDto(LibelleBudget(budget.Nature, budget.Exercice)));
     }
 
     public static EngagementDto VersDto(this Engagement engagement)
@@ -193,7 +208,7 @@ public static class Projections
             engagement.Attendu,
             engagement.Constate,
             [.. engagement.Deliberations.Select(deliberation => deliberation.Valeur)],
-            engagement.Source.VersDto());
+            engagement.Source.VersDto("Programme électoral"));
 
     public static ProgrammeDto VersDto(this Programme programme)
         => new(
@@ -204,7 +219,46 @@ public static class Projections
             programme.NomDeLaListe,
             programme.PartRealisee,
             [.. programme.Engagements.Select(VersDto)],
-            programme.Source.VersDto());
+            programme.Source.VersDto($"Programme électoral — {programme.NomDeLaListe}"));
+
+    // ── Libellés de sources ───────────────────────────────────────────────────────────────
+    // Chaque libellé décrit le document par ce dont il est la source, jamais par une nature
+    // qu'on ne connaît pas : Source ne porte qu'une URL et deux dates.
+
+    private static string LibelleConseil(ConseilMunicipal conseil)
+        => $"Conseil municipal — mandature ouverte le {EnFrancais(conseil.Mandature.Periode.Start)}";
+
+    private static string LibelleSeance(DateOnly dateSeance)
+        => $"Séance du conseil municipal du {EnFrancais(dateSeance)}";
+
+    private static string LibelleProcesVerbal(DateOnly dateSeance, int? nombreDePages)
+        => nombreDePages is { } pages
+            ? $"Procès-verbal de la séance du {EnFrancais(dateSeance)} ({pages} p.)"
+            : $"Procès-verbal de la séance du {EnFrancais(dateSeance)}";
+
+    private static string LibelleDeliberation(NumeroDeliberation numero, DateOnly dateSeance)
+        => $"Délibération n° {numero} du {EnFrancais(dateSeance)}";
+
+    private static string LibelleBudget(NatureDeBudget nature, int exercice) => nature switch
+    {
+        NatureDeBudget.Primitif => $"Budget primitif {exercice}",
+        NatureDeBudget.BudgetSupplementaire => $"Budget supplémentaire {exercice}",
+        _ => $"Compte administratif {exercice}"
+    };
+
+    /// <summary>
+    /// Date en toutes lettres. Les mois sont écrits en dur plutôt que tirés d'une
+    /// <c>CultureInfo</c> : Beffroi est francophone par conception, et dépendre d'ICU ferait
+    /// échouer la projection dans une image conteneur dépourvue des données de culture.
+    /// </summary>
+    private static string EnFrancais(DateOnly date)
+        => $"{(date.Day == 1 ? "1er" : date.Day.ToString())} {Mois[date.Month - 1]} {date.Year}";
+
+    private static readonly string[] Mois =
+    [
+        "janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre"
+    ];
 
     private static string Appartenance(bool? appartient) => appartient switch
     {

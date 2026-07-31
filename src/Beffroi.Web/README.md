@@ -23,6 +23,30 @@ npm run dev
 | `npm run start` | Sert le build de production |
 | `npm run lint` | ESLint |
 
+## Règles d'affichage
+
+Arbitrées le 2026-07-31 en confrontant une maquette de référence au contrat de l'API. Elles
+portent sur des points où la maquette et le contrat divergeaient — la maquette montrait moins
+que ce que l'API sait dire. Elles s'appliquent à tous les composants.
+
+**La couleur thématique n'est jamais une prop.** Les sept thématiques ont des tokens CSS
+(`--th-education`, …) plus une variante claire pour les fonds sombres et un `--th-neutre` pour
+les `Thematique` nulles. Les composants posent `data-thematique={code}` — le `code` venant de
+l'API, jamais d'une table côté front — et le CSS fait le reste.
+
+**La relecture humaine se signale par délibération, dans les deux sens.** `Reformulation.EstRelu`
+donne « Relu le {date} » en discret, `false` donne « Brouillon non relu » en visible. Pas de
+badge global « résumés assistés par IA » : le silence ne permet pas de distinguer un texte
+vérifié d'un texte dont on ne dit rien, et la crédibilité est le produit.
+
+**Les champs nullables ont des replis explicites.** Pas de `Reformulation` → `ObjetOfficiel`
+seul, sans faux résumé. Pas de `Vote` → `Resultat` et `EstUnanime` seuls, sans décompte inventé.
+Ce sont les cas fréquents : les procès-verbaux ne chiffrent pas tous les votes.
+
+**Les barres de budget sont proportionnelles au total, pas à la plus grande ligne.** Une ligne à
+6 % du budget occupe 6 % de la largeur. L'espace restant matérialise `PartVentilee`, c'est-à-dire
+la part qui échappe aux sept thématiques — que le contrat demande explicitement d'afficher.
+
 ## Remontées explicites de versions (`overrides`)
 
 `package.json` n'acceptant pas de commentaires, la justification est ici. Même démarche que
